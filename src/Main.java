@@ -16,13 +16,16 @@ class Book{
     private int year;
     private int quantity;
 
-    public Book(String title, int isbn, String genre, String author, int year, int quantity) {
+    private boolean forWorkers;
+
+    public Book(String title, int isbn, String genre, String author, int year, int quantity, boolean forWorkers) {
         this.title = title;
         this.isbn = isbn;
         this.genre = genre;
         this.author = author;
         this.year = year;
         this.quantity = quantity;
+        this.forWorkers = forWorkers;
     }
 
     public void setQuantity(int quantity) {
@@ -44,18 +47,24 @@ class Book{
         System.out.println("Год: " + this.year);
         System.out.println("Количество: " + this.quantity);
     }
+
+    public boolean isForWorkers() {
+        return forWorkers;
+    }
 }
 
 class User{
     private int id;
     private String name;
     private String group;
+    private boolean student;
     private ArrayList<Book> borrowedBooks = new ArrayList<>();
 
-    public User(int id, String name, String group) {
+    public User(int id, String name, String group, boolean _student) {
         this.id = id;
         this.name = name;
         this.group = group;
+        this.student= _student;
     }
 
     public ArrayList<Book> getBorrowedBooks() {
@@ -81,6 +90,10 @@ class User{
 
     public int getId() {
         return id;
+    }
+
+    public boolean isStudent() {
+        return student;
     }
 }
 
@@ -136,8 +149,14 @@ class Library{
         } else {
             bookie = books.get(m);
             System.out.println("Выберите пользователя: ");
-            for(int i = 0; i < users.size(); i++) {
-                System.out.println(i+1 + "." + users.get(i).getName());
+            if(bookie.isForWorkers()){
+                for(int i = 0; i < users.stream().filter(x->x.isStudent()).toList().size(); i++) {
+                    System.out.println(i+1 + "." + users.stream().filter(x->x.isStudent()).toList().get(i).getName());
+                }
+            }else{
+                for(int i = 0; i < users.size(); i++) {
+                    System.out.println(i+1 + "." + users.get(i).getName());
+                }
             }
             System.out.println("0.Вернуться в меню");
             int n = in.nextInt()-1;
@@ -198,12 +217,19 @@ class Library{
         String name = in.nextLine();
         System.out.print("Группа: ");
         String group = in.nextLine();
+        System.out.print("1.Студент\n2.Работник");
+        int stud = in.nextInt();
         int id = 0;
         if(users.size() - 1 > -1){
             id = users.get(users.size() - 1).getId();
         }
-        User us = new User(id,name,group);
-        users.add(us);
+        if(stud == 1){
+            User us = new User(id,name,group,true);
+            users.add(us);
+        }else{
+            User us = new User(id,name,group,false);
+            users.add(us);
+        }
         menu();
     }
 
@@ -222,8 +248,15 @@ class Library{
         int year = in.nextInt();
         System.out.print("Количество: ");
         int quantity = in.nextInt();
-        Book bk = new Book(title,isbn,genre,author,year,quantity);
-        books.add(bk);
+        System.out.print("1.Для всех\n2.Только для работников");
+        int work = in.nextInt();
+        if(work == 1){
+            Book bk = new Book(title,isbn,genre,author,year,quantity,false);
+            books.add(bk);
+        }else{
+            Book bk = new Book(title,isbn,genre,author,year,quantity,true);
+            books.add(bk);
+        }
         menu();
     }
     public void menu(){
